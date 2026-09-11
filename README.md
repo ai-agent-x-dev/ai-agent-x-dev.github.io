@@ -57,4 +57,4 @@ Full report: [`SECURITY_AUDIT.md`](./SECURITY_AUDIT.md)
 
 ---
 
-<sub>© 2026 ai-agent-x-dev · some rights reserved · 🛡️ Audited by Claude ✓</sub>
+<sub>© 2026 ai-agent-x-dev · some rights reserved · 🛡️ Security-audited Az4kiS ✓</sub>
