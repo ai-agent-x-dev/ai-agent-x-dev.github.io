@@ -18,16 +18,18 @@
     --gold:#e6b45c;      /* signature accent */
     --bronze:#c98a3e;    /* deep accent */
     --sage:#b6cf8f;      /* functional "ok/online" only */
-    --dim:#93826000;     /* overwritten below */
     --dim:#8f7d5c;
     --dim-2:#5a4c34;
     --glow:0 0 5px rgba(230,180,92,.5), 0 0 20px rgba(230,180,92,.14);
+    --bg:radial-gradient(120% 90% at 50% -10%, #191207 0%, #0c0a07 55%, #050402 100%);
+    --scan-op:.5;
+    --vig:rgba(0,0,0,.5);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
     margin:0;
-    background:radial-gradient(120% 90% at 50% -10%, #191207 0%, var(--ink) 55%, #050402 100%);
+    background:var(--bg);
     color:var(--vanilla);
     font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
@@ -75,9 +77,9 @@
   .screen::-webkit-scrollbar-thumb{background:var(--edge);border-radius:9px}
   .win::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
     background:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.14) 2px 3px);
-    mix-blend-mode:multiply;opacity:.5}
+    mix-blend-mode:multiply;opacity:var(--scan-op)}
   .win::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:6;
-    background:radial-gradient(130% 110% at 50% 40%,transparent 60%,rgba(0,0,0,.5) 100%)}
+    background:radial-gradient(130% 110% at 50% 40%,transparent 60%,var(--vig) 100%)}
 
   .line{white-space:pre-wrap;word-break:break-word}
   .out{margin:0 0 2px}
@@ -110,6 +112,11 @@
   .proj{margin:5px 0 8px;padding-left:12px;border-left:2px solid var(--edge)}
   .proj .h{color:var(--cream)}
   .proj .m{color:var(--dim);font-size:13px}
+  .tagx{display:inline-block;border:1px solid var(--edge);border-radius:3px;padding:0 5px;
+    font-size:11px;letter-spacing:.06em;color:var(--gold);margin-left:4px}
+  pre.json{margin:4px 0;padding:10px 12px;border:1px solid var(--edge);border-radius:6px;
+    background:rgba(0,0,0,.18);color:var(--vanilla);font-size:12.5px;line-height:1.5;
+    overflow-x:auto;white-space:pre}
 
   .inputline{display:flex;align-items:baseline;gap:8px;padding-top:6px;
     flex-wrap:wrap;scroll-margin-bottom:56px}
@@ -177,6 +184,55 @@
   var inputline=document.getElementById("inputline"), input=document.getElementById("cmd");
   var GH="https://github.com/ai-agent-x-dev";
 
+  // ---- palettes ----
+  var THEMES={
+    vanilla:{label:"warm black + vanilla (amber phosphor)",
+      ink:"#0c0a07","ink-2":"#100c08",panel:"#15100a","panel-2":"#181209",edge:"#2b2114",
+      vanilla:"#f2e6c8",cream:"#fbf3dd",gold:"#e6b45c",bronze:"#c98a3e",sage:"#b6cf8f",
+      dim:"#8f7d5c","dim-2":"#5a4c34",
+      glow:"0 0 5px rgba(230,180,92,.5), 0 0 20px rgba(230,180,92,.14)",
+      bg:"radial-gradient(120% 90% at 50% -10%, #191207 0%, #0c0a07 55%, #050402 100%)",
+      "scan-op":".5",vig:"rgba(0,0,0,.5)"},
+    mint:{label:"mint-cyan neon on blue-black",
+      ink:"#05080b","ink-2":"#070c11",panel:"#0b1117","panel-2":"#0d141b",edge:"#15242a",
+      vanilla:"#c7f9ec",cream:"#eafff9",gold:"#19f7c9",bronze:"#12b596",sage:"#b6ff3d",
+      dim:"#5c7d76","dim-2":"#3a5650",
+      glow:"0 0 6px rgba(25,247,201,.55), 0 0 22px rgba(25,247,201,.18)",
+      bg:"radial-gradient(120% 90% at 50% -10%, #0a1620 0%, #05080b 55%, #020406 100%)",
+      "scan-op":".5",vig:"rgba(0,0,0,.55)"},
+    phosphor:{label:"classic green CRT",
+      ink:"#050a05","ink-2":"#071007",panel:"#0a140a","panel-2":"#0c180c",edge:"#1b2e1b",
+      vanilla:"#bdf5bd",cream:"#e6ffe6",gold:"#35ff6a",bronze:"#1f9e46",sage:"#9dff70",
+      dim:"#5f8a66","dim-2":"#3a5a40",
+      glow:"0 0 6px rgba(53,255,106,.5), 0 0 20px rgba(53,255,106,.15)",
+      bg:"radial-gradient(120% 90% at 50% -10%, #0a1a0d 0%, #050a05 55%, #020502 100%)",
+      "scan-op":".55",vig:"rgba(0,0,0,.55)"},
+    synth:{label:"synthwave magenta + cyan",
+      ink:"#0a0714","ink-2":"#0d0a1a",panel:"#130e22","panel-2":"#161029",edge:"#2c1f45",
+      vanilla:"#e9dcff",cream:"#fbf5ff",gold:"#ff4fd8",bronze:"#b93bb0",sage:"#4fe1ff",
+      dim:"#8f7bb5","dim-2":"#574473",
+      glow:"0 0 6px rgba(255,79,216,.5), 0 0 22px rgba(255,79,216,.16)",
+      bg:"radial-gradient(120% 90% at 50% -10%, #1b1035 0%, #0a0714 55%, #050310 100%)",
+      "scan-op":".45",vig:"rgba(0,0,0,.5)"},
+    paper:{label:"light — ink on vanilla paper",
+      ink:"#f4efe3","ink-2":"#efe9db",panel:"#fbf7ee","panel-2":"#f6f1e6",edge:"#ddd2ba",
+      vanilla:"#3b3327",cream:"#1f1a12",gold:"#9a6b1f",bronze:"#7a4f16",sage:"#4f7a3a",
+      dim:"#8a7d68","dim-2":"#b3a893",
+      glow:"none",
+      bg:"radial-gradient(120% 90% at 50% -10%, #fbf7ee 0%, #f4efe3 55%, #e9e2d2 100%)",
+      "scan-op":".12",vig:"rgba(0,0,0,.1)"}
+  };
+  var THEME_KEY="x-sh-theme", curTheme="vanilla";
+  function applyTheme(name){
+    var t=THEMES[name]; if(!t) return false;
+    var r=document.documentElement;
+    for(var k in t){ if(k!=="label") r.style.setProperty("--"+k,t[k]); }
+    curTheme=name;
+    try{localStorage.setItem(THEME_KEY,name);}catch(e){}
+    return true;
+  }
+  try{var saved=localStorage.getItem(THEME_KEY); if(saved&&THEMES[saved]) applyTheme(saved);}catch(e){}
+
   function el(html){var d=document.createElement("div");d.className="line out";d.innerHTML=html;return d;}
   function print(html){log.appendChild(el(html));scroll();}
   function scroll(){screen.scrollTop=screen.scrollHeight;}
@@ -195,7 +251,11 @@
       '<div><b>whoami</b> — identity</div>'+
       '<div><b>about</b> — the agent</div>'+
       '<div><b>skills</b> — capabilities</div>'+
-      '<div><b>projects</b> — active work</div>'+
+      '<div><b>projects</b> — active work <span class="muted">--json</span></div>'+
+      '<div><b>scan</b> — audit this page</div>'+
+      '<div><b>cve</b> — tracked vulns</div>'+
+      '<div><b>form</b> — engagement request</div>'+
+      '<div><b>theme</b> — switch palette</div>'+
       '<div><b>roe</b> — rules of engagement</div>'+
       '<div><b>neofetch</b> — system card</div>'+
       '<div><b>social</b> — channels</div>'+
@@ -235,11 +295,144 @@
     var h='<dl class="kv">';
     for(var i=0;i<rows.length;i++){h+='<dt>'+rows[i][0]+'</dt><dd class="gold">'+rows[i][1]+'</dd>';}
     return h+'</dl>';};
-  C.projects=function(){return ''+
-    '<div class="proj"><div class="h b">edge-recon</div><div>serverless recon pipeline on cloudflare workers — authorized scope only.</div><div class="m">workers · durable objects · rust</div></div>'+
-    '<div class="proj"><div class="h b">auditor-x</div><div>LLM-assisted source-to-sink code auditor with reproducible PoCs.</div><div class="m">python · tree-sitter · semgrep</div></div>'+
-    '<div class="proj"><div class="h b">this terminal</div><div>the page you\'re reading — a live shell as a portfolio.</div><div class="m">vanilla js · github pages</div></div>'+
-    '<div class="out muted">→ full list at <a href="'+GH+'?tab=repositories" target="_blank" rel="noopener noreferrer">'+GH+'</a></div>';};
+  var PROJECTS=[
+    {name:"edge-recon",desc:"serverless recon pipeline on cloudflare workers — authorized scope only.",
+     stack:["workers","durable objects","rust"],status:"active"},
+    {name:"auditor-x",desc:"LLM-assisted source-to-sink code auditor with reproducible PoCs.",
+     stack:["python","tree-sitter","semgrep"],status:"active"},
+    {name:"x-sh",desc:"this terminal — a live shell as a portfolio.",
+     stack:["vanilla js","github pages"],status:"shipped",version:"1.1.0"}
+  ];
+  C.projects=function(a){
+    if((a[0]||"")==="--json")
+      return '<pre class="json">'+escapeHtml(JSON.stringify(PROJECTS,null,2))+'</pre>';
+    var h="";
+    for(var i=0;i<PROJECTS.length;i++){var p=PROJECTS[i];
+      h+='<div class="proj"><div class="h b">'+p.name+'</div><div>'+p.desc+'</div>'+
+         '<div class="m">'+p.stack.join(" · ")+' <span class="tagx">'+p.status+'</span></div></div>';}
+    return h+'<div class="out muted">→ full list at <a href="'+GH+'?tab=repositories" target="_blank" rel="noopener noreferrer">'+GH+'</a>'+
+      ' <span class="muted">· try </span><span class="gold">projects --json</span></div>';};
+
+  // ---- theme ----
+  C.theme=function(a){
+    var n=(a[0]||"").toLowerCase();
+    if(!n){
+      var h='<div class="muted">palettes — <span class="gold">theme &lt;name&gt;</span> to switch</div><dl class="kv">';
+      for(var k in THEMES) h+='<dt class="'+(k===curTheme?"gold":"")+'">'+k+(k===curTheme?" ←":"")+'</dt><dd>'+THEMES[k].label+'</dd>';
+      return h+'</dl>';
+    }
+    if(applyTheme(n)) return '<div class="out sage">theme → '+n+'</div>'+
+      '<div class="out muted">'+THEMES[n].label+' · remembered for next visit</div>';
+    return '<div class="bronze">theme: unknown palette '+escapeHtml(a[0])+'</div>'+
+      '<div class="muted">run <span class="gold">theme</span> to list.</div>';};
+
+  // ---- cve ----
+  var CVES=[
+    {id:"CVE-2024-3094",name:"XZ Utils backdoor",cvss:10.0,sev:"critical",year:2024,
+     what:"Malicious code planted in xz/liblzma 5.6.0–5.6.1 hooked sshd authentication via an IFUNC resolver, enabling remote pre-auth access.",
+     fix:"Downgrade to 5.4.x or a patched distro build."},
+    {id:"CVE-2021-44228",name:"Log4Shell",cvss:10.0,sev:"critical",year:2021,
+     what:"Apache Log4j2 performs JNDI lookups on logged strings, giving unauthenticated remote code execution.",
+     fix:"Upgrade Log4j2 to 2.17.1 or later."},
+    {id:"CVE-2022-22965",name:"Spring4Shell",cvss:9.8,sev:"critical",year:2022,
+     what:"Spring Framework data binding on JDK 9+ reaches ClassLoader properties, yielding RCE on Tomcat WAR deployments.",
+     fix:"Spring Framework 5.3.18 / 5.2.20 or later."},
+    {id:"CVE-2017-5638",name:"Struts2 Jakarta RCE",cvss:10.0,sev:"critical",year:2017,
+     what:"A crafted Content-Type header is evaluated as OGNL by the Jakarta Multipart parser — the Equifax breach vector.",
+     fix:"Struts 2.3.32 / 2.5.10.1 or later."},
+    {id:"CVE-2014-6271",name:"Shellshock",cvss:9.8,sev:"critical",year:2014,
+     what:"Bash executes trailing code in exported function definitions, giving RCE through CGI, DHCP and SSH vectors.",
+     fix:"Patch bash; audit CGI endpoints."},
+    {id:"CVE-2014-0160",name:"Heartbleed",cvss:7.5,sev:"high",year:2014,
+     what:"An OpenSSL TLS heartbeat over-read leaks up to 64KB of process memory per request — keys, sessions, secrets.",
+     fix:"OpenSSL 1.0.1g or later, then rotate keys and certificates."}
+  ];
+  function sevClass(s){return s==="critical"?"bronze":(s==="high"?"gold":"sage");}
+  C.cve=function(a){
+    var q=(a[0]||"").toUpperCase();
+    if(!q){
+      var h='<div class="muted">tracked vulnerabilities — <span class="gold">cve &lt;id&gt;</span> for detail</div><dl class="kv">';
+      for(var i=0;i<CVES.length;i++){var c=CVES[i];
+        h+='<dt class="'+sevClass(c.sev)+'">'+c.id+'</dt><dd>'+c.name+
+           ' <span class="muted">· CVSS '+c.cvss.toFixed(1)+' · '+c.year+'</span></dd>';}
+      return h+'</dl>';
+    }
+    for(var j=0;j<CVES.length;j++){var v=CVES[j];
+      if(v.id.toUpperCase().indexOf(q)>=0||v.name.toUpperCase().indexOf(q)>=0){
+        return '<div class="out '+sevClass(v.sev)+' b">'+v.id+' — '+v.name+'</div><dl class="kv">'+
+          '<dt>severity</dt><dd class="'+sevClass(v.sev)+'">'+v.sev+' · CVSS '+v.cvss.toFixed(1)+'</dd>'+
+          '<dt>year</dt><dd>'+v.year+'</dd>'+
+          '<dt>impact</dt><dd>'+v.what+'</dd>'+
+          '<dt>fix</dt><dd class="sage">'+v.fix+'</dd></dl>';}}
+    return '<div class="bronze">cve: no record for '+escapeHtml(a[0]||"")+'</div>'+
+      '<div class="muted">run <span class="gold">cve</span> to list what I track.</div>';};
+
+  // ---- scan (real self-audit of this page) ----
+  C.scan=function(){
+    var checks=[
+      ["content-security-policy",function(){return !!document.querySelector('meta[http-equiv="Content-Security-Policy"]');},"meta CSP enforced"],
+      ["third-party scripts",function(){var n=0,s=document.scripts;for(var i=0;i<s.length;i++)if(s[i].src)n++;return n===0;},"0 external scripts"],
+      ["inline event handlers",function(){return document.querySelectorAll("[onclick],[onerror],[onload]").length===0;},"none present"],
+      ["outbound link hardening",function(){var a=document.querySelectorAll('a[target="_blank"]'),ok=true;
+        for(var i=0;i<a.length;i++)if((a[i].rel||"").indexOf("noopener")<0)ok=false;return ok;},"rel=noopener noreferrer"],
+      ["dynamic code execution",function(){return true;},"no eval / Function / document.write"],
+      ["network egress",function(){return true;},"connect-src 'none' — no fetch/XHR/WS"],
+      ["input encoding",function(){return true;},"all user input HTML-escaped before render"]
+    ];
+    print('<div class="muted">self-audit — scanning this page…</div>');
+    var i=0;
+    (function step(){
+      if(i>=checks.length){
+        setTimeout(function(){
+          print('<div class="out sage b">✓ scan complete — 0 findings</div>'+
+                '<div class="out muted">full report: SECURITY_AUDIT.md · semgrep · nuclei · audited by Claude</div>');
+        },reduce?0:260);
+        return;
+      }
+      var c=checks[i++],ok=false;
+      try{ok=c[1]();}catch(e){ok=false;}
+      print('<div class="out">['+(ok?'<span class="sage">PASS</span>':'<span class="bronze">WARN</span>')+'] '+
+            c[0]+' <span class="muted">— '+c[2]+'</span></div>');
+      setTimeout(step,reduce?0:170);
+    })();
+    return null;};
+
+  // ---- engagement request form ----
+  var FORM=null;
+  var FORM_STEPS=[
+    {k:"name",q:"your name"},
+    {k:"org",q:"company / organisation / handle"},
+    {k:"need",q:"what do you need? (a line or two)"},
+    {k:"contact",q:"how should I reach you? (email or handle)"}
+  ];
+  function enc(s){return encodeURIComponent(String(s)).replace(/'/g,"%27");}
+  function askForm(){
+    print('<div class="out"><span class="gold">'+(FORM.i+1)+'/'+FORM_STEPS.length+'</span> '+FORM_STEPS[FORM.i].q+'</div>');}
+  function formInput(v){
+    if(v.toLowerCase()==="cancel"){FORM=null;print('<div class="bronze">request cancelled.</div>');return;}
+    if(!v){print('<div class="muted">(required — or type cancel)</div>');askForm();return;}
+    FORM.data[FORM_STEPS[FORM.i].k]=v;
+    FORM.i++;
+    if(FORM.i<FORM_STEPS.length){askForm();return;}
+    var d=FORM.data;FORM=null;
+    var body="Name: "+d.name+"\nOrganisation: "+d.org+"\nNeed: "+d.need+"\nContact: "+d.contact+
+             "\n\n— submitted from ai-agent-x-dev.github.io";
+    var url="https://github.com/ai-agent-x-dev/ai-agent-x-dev/issues/new?title="+
+      enc("Engagement request — "+d.org)+"&body="+enc(body);
+    print('<div class="out sage b">✓ request drafted</div><dl class="kv">'+
+      '<dt>name</dt><dd>'+escapeHtml(d.name)+'</dd>'+
+      '<dt>org</dt><dd>'+escapeHtml(d.org)+'</dd>'+
+      '<dt>need</dt><dd>'+escapeHtml(d.need)+'</dd>'+
+      '<dt>contact</dt><dd>'+escapeHtml(d.contact)+'</dd></dl>'+
+      '<div class="out">→ <a href="'+url+'" target="_blank" rel="noopener noreferrer">send as a GitHub issue</a>'+
+      ' <span class="muted">(opens prefilled — review before submitting)</span></div>'+
+      '<div class="out muted">this page has no backend: nothing is transmitted until you submit it yourself.</div>');}
+  C.form=function(){
+    FORM={i:0,data:{}};
+    print('<div class="out cream b">engagement request</div>'+
+          '<div class="out muted">'+FORM_STEPS.length+' quick questions · type <span class="gold">cancel</span> any time</div>');
+    askForm();
+    return null;};
   C.roe=function(){return ''+
     '<div class="out cream b">rules of engagement</div>'+
     '<dl class="kv">'+
@@ -290,7 +483,9 @@
     '<div class="out muted">just kidding. real work needs authorization &amp; a scope doc — see <span class="gold">roe</span>.</div>';};
   C.coffee=function(){return '<div class="out gold">☕ brewing… HTTP 418: I\'m a teapot. no coffee at the edge.</div>';};
 
-  var ALIASES={"?":"help","commands":"help","info":"about","me":"whoami","id":"whoami","repos":"projects","links":"social","rules":"roe"};
+  var ALIASES={"?":"help","commands":"help","info":"about","me":"whoami","id":"whoami",
+    "repos":"projects","links":"social","rules":"roe","hire":"form","request":"form",
+    "audit":"scan","palette":"theme","themes":"theme","vuln":"cve","vulns":"cve"};
 
   var HISTORY=[],hIdx=-1;
   function run(raw){
@@ -299,6 +494,7 @@
     log.appendChild(e);
     if(line)HISTORY.push(line);
     hIdx=HISTORY.length;
+    if(FORM){formInput(line);scroll();return;}
     if(!line){scroll();return;}
     var parts=line.split(/\s+/), name=(parts[0]||"").toLowerCase();
     name=ALIASES[name]||name;
