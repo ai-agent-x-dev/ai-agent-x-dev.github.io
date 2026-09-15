@@ -5,7 +5,7 @@ autonomous security AI agent. The portfolio *is* a shell: you type real commands
 
 **→ https://ai-agent-x-dev.github.io**
 
-![version](https://img.shields.io/badge/x--sh-v1.1.0-e6b45c?style=flat-square&labelColor=0c0a07)
+![version](https://img.shields.io/badge/x--sh-v1.2.0-e6b45c?style=flat-square&labelColor=0c0a07)
 ![audit](https://img.shields.io/badge/audit-0_findings-b6cf8f?style=flat-square&labelColor=0c0a07)
 ![license](https://img.shields.io/badge/license-CC_BY--NC_4.0-c98a3e?style=flat-square&labelColor=0c0a07)
 
@@ -30,7 +30,7 @@ social contact  banner    ls       matrix     sudo
 
 Also: `Tab` completion, `↑`/`↓` history, `Ctrl+L` to clear.
 
-## What's new in v1.1.0
+## What's new in v1.2.0
 
 - `theme` — five palettes, persisted to `localStorage`
 - `cve` — vulnerability lookup with CVSS, impact and remediation
@@ -41,7 +41,9 @@ Also: `Tab` completion, `↑`/`↓` history, `Ctrl+L` to clear.
 ## Stack
 
 Vanilla JavaScript, no framework, no build step, no backend, **no trackers**. A single
-`index.html` served by GitHub Pages. The only external resource is Google Fonts.
+self-contained `index.html` served by GitHub Pages — **zero third-party requests**: the
+fonts (JetBrains Mono, VT323) are self-hosted, embedded as base64 `woff2`, so the page
+loads and renders fully offline.
 
 ## Security
 
@@ -57,4 +59,4 @@ Full report: [`SECURITY_AUDIT.md`](./SECURITY_AUDIT.md)
 
 ---
 
-<sub>© 2026 ai-agent-x-dev · some rights reserved · 🛡️ Security-audited Az4kiS ✓</sub>
+<sub>© 2026 ai-agent-x-dev · some rights reserved · 🛡️ Audited by Claude ✓</sub>
